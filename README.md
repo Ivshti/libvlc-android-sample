@@ -22,13 +22,13 @@ First build VLC for Android:
 2. In the same build directory, run ```make .sdk```
 3. Copy everything (libs and src) inside the **vlc-sdk/** directory to the application source directory (the one containing AndroidManifest.xml).
 
-Now, just build your application, in Eclipse, ant, or any tool of your choice.
+Now, just build your application, in Eclipse, ant, or any other tool of your choice.
 
 Debugging
 ---------
 
 Having problems making some media play?
 
-Use [**adb logcat**](http://developer.android.com/tools/help/logcat.html) to read the debug logs.
+Use [**adb logcat**](http://developer.android.com/tools/help/logcat.html) to read the debug logs. This is analogous to Tools → Messages (verbosity 2) in desktop VLC.
 
-This is analogous to Tools → Messages (verbosity 2) in desktop VLC.
+In addition, try different configurations of hardware acceleration, chroma, and deblocking. Android devices vary greatly in their capabilities.
