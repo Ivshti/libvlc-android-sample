@@ -24,7 +24,7 @@ public class MainActivity extends Activity {
     public final static String TAG = "LibVLCAndroidSample/MainActivity";
 
     DirectoryAdapter mAdapter;
-    LibVLC mLibVLC;
+    LibVLC mLibVLC = null;
 
     View.OnClickListener mSimpleListener = new View.OnClickListener() {
         @Override
@@ -110,6 +110,14 @@ public class MainActivity extends Activity {
                 mAdapter.refresh();
             }
         });
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        mLibVLC.closeAout();
+        mLibVLC.destroy();
+        mLibVLC = null;
     }
 
     @Override

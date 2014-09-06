@@ -187,8 +187,6 @@ public class VideoActivity extends Activity implements SurfaceHolder.Callback,
         libvlc.stop();
         libvlc.detachSurface();
         holder = null;
-        libvlc.closeAout();
-        libvlc.destroy();
         libvlc = null;
 
         mVideoWidth = 0;
