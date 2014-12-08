@@ -26,6 +26,8 @@ public class MainActivity extends Activity {
     DirectoryAdapter mAdapter;
     LibVLC mLibVLC = null;
 
+    boolean mPlayingVideo = false; // Don't destroy libVLC if the video activity is playing.
+
     View.OnClickListener mSimpleListener = new View.OnClickListener() {
         @Override
         public void onClick(View arg0) {
@@ -90,6 +92,7 @@ public class MainActivity extends Activity {
                 } else {
                     Intent intent = new Intent(MainActivity.this, VideoActivity.class);
                     intent.putExtra(VideoActivity.LOCATION, (String) mAdapter.getItem(position));
+                    mPlayingVideo = true;
                     startActivity(intent);
                 }
             }
@@ -113,11 +116,19 @@ public class MainActivity extends Activity {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        mPlayingVideo = false;
+    };
+
+    @Override
     public void onStop() {
         super.onStop();
-        mLibVLC.closeAout();
-        mLibVLC.destroy();
-        mLibVLC = null;
+        if(!mPlayingVideo) {
+            mLibVLC.closeAout();
+            mLibVLC.destroy();
+            mLibVLC = null;
+        }
     }
 
     @Override
