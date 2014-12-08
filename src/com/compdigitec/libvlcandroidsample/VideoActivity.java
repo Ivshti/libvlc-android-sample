@@ -108,6 +108,9 @@ public class VideoActivity extends Activity implements SurfaceHolder.Callback,
         if (mVideoWidth * mVideoHeight <= 1)
             return;
 
+        if(holder == null || mSurface == null)
+            return;
+
         // get screen size
         int w = getWindow().getDecorView().getWidth();
         int h = getWindow().getDecorView().getHeight();
