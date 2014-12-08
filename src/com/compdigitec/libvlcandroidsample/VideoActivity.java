@@ -5,6 +5,7 @@ import java.lang.ref.WeakReference;
 import org.videolan.libvlc.EventHandler;
 import org.videolan.libvlc.IVideoPlayer;
 import org.videolan.libvlc.LibVLC;
+import org.videolan.libvlc.LibVlcUtil;
 import org.videolan.libvlc.Media;
 import org.videolan.libvlc.MediaList;
 
@@ -17,6 +18,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.ViewGroup.LayoutParams;
@@ -139,7 +141,7 @@ public class VideoActivity extends Activity implements SurfaceHolder.Callback,
     }
 
     @Override
-    public void setSurfaceSize(int width, int height, int visible_width,
+    public void setSurfaceLayout(int width, int height, int visible_width,
             int visible_height, int sar_num, int sar_den) {
         Message msg = Message.obtain(mHandler, VideoSizeChanged, width, height);
         msg.sendToTarget();
@@ -165,11 +167,13 @@ public class VideoActivity extends Activity implements SurfaceHolder.Callback,
             libvlc.setSubtitlesEncoding("");
             libvlc.setAout(LibVLC.AOUT_OPENSLES);
             libvlc.setTimeStretching(true);
-            libvlc.setChroma("RV32");
             libvlc.setVerboseMode(true);
+            if(LibVlcUtil.isGingerbreadOrLater())
+                libvlc.setVout(LibVLC.VOUT_ANDROID_WINDOW);
+            else
+                libvlc.setVout(LibVLC.VOUT_ANDROID_SURFACE);
             LibVLC.restart(this);
             EventHandler.getInstance().addHandler(mHandler);
-            holder.setFormat(PixelFormat.RGBX_8888);
             holder.setKeepScreenOn(true);
             MediaList list = libvlc.getMediaList();
             list.clear();
@@ -220,6 +224,7 @@ public class VideoActivity extends Activity implements SurfaceHolder.Callback,
             Bundle b = msg.getData();
             switch (b.getInt("event")) {
             case EventHandler.MediaPlayerEndReached:
+                Log.d(TAG, "MediaPlayerEndReached");
                 player.releasePlayer();
                 break;
             case EventHandler.MediaPlayerPlaying:
@@ -229,5 +234,26 @@ public class VideoActivity extends Activity implements SurfaceHolder.Callback,
                 break;
             }
         }
+    }
+
+    @Override
+    public void eventHardwareAccelerationError() {
+        // Handle errors with hardware acceleration
+        Log.e(TAG, "Error with hardware acceleration");
+        this.releasePlayer();
+        Toast.makeText(this, "Error with hardware acceleration", Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public int configureSurface(Surface surface, int width, int height, int hal) {
+        Log.d(TAG, "configureSurface: width = " + width + ", height = " + height);
+        if (LibVlcUtil.isICSOrLater() || surface == null)
+            return -1;
+        if (width * height == 0)
+            return 0;
+        if(hal != 0)
+            holder.setFormat(hal);
+        holder.setFixedSize(width, height);
+        return 1;
     }
 }
