@@ -18,6 +18,10 @@ Requirements:
 
 First build VLC for Android:
 
+**Note**: Recently significant LibVLC for Android API changes have been committed, and as such this sample will need to be updated. *In the meantime*, an older revision of VLC for Android can be used, such as http://git.videolan.org/?p=vlc-ports/android.git;a=commitdiff;h=b01969a4bfe1b2fa4580f5e8df08dc29566d7a16
+
+To do this, after running ```git clone git://git.videolan.org/vlc-ports/android.git```, run ```git checkout b01969a4bfe1b2fa4580f5e8df08dc29566d7a16```. Restore the repository with ```git checkout master```.
+
 1. Follow [AndroidCompile](https://wiki.videolan.org/AndroidCompile) and build VLC for Android.
 2. In the same build directory, run ```make .sdk```
 3. Copy everything (libs and src) inside the **vlc-sdk/** directory to the application source directory (the one containing AndroidManifest.xml).
