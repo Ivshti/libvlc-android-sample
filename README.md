@@ -3,30 +3,28 @@ LibVLC on Android demo
 
 This is a sample application demonstrating the use of libVLC on Android.
 
-This repository contains only sample code, and the libVLC on Android sdk (*vlc-sdk.7z*) must be built and placed into the target application's source code directory.
+This repository contains only sample code, and the libVLC on Android sdk (the LibVLC AAR) must be built and placed into the root project folder.
 
 Getting started
 ---------------
 Requirements:
 
 * An up-to-date Linux distribution.
-  * This is because VLC (and VLC for Android) uses autotools and make in order to be portable to so many diverse platforms.
+  * This is because VLC (and VLC for Android) uses autotools and make in order to be portable on so many diverse platforms.
   * [VirtualBox](http://www.virtualbox.org/) is always an option if Linux is not available natively on the computer.
-* Android NDK r9
+* Android NDK r10e
 * Android SDK
-* [Any other pieces of software](https://wiki.videolan.org/AndroidCompile#Requirements) listed in the compile guide.
+* Android Studio
+* [Other software](https://wiki.videolan.org/AndroidCompile#Requirements) listed in the compile guide.
 
-First build VLC for Android:
 
-**Note**: Recently significant LibVLC for Android API changes have been committed, and as such this sample will need to be updated. *In the meantime*, an older revision of VLC for Android can be used, such as http://git.videolan.org/?p=vlc-ports/android.git;a=commitdiff;h=b01969a4bfe1b2fa4580f5e8df08dc29566d7a16
+1. First build VLC for Android, by following [AndroidCompile](https://wiki.videolan.org/AndroidCompile).
+2. Copy ```libvlc/build/outputs/aar/libvlc-3.0.0.aar``` to the same directory as this README and **rename** it to ```libvlc.aar```.
+3. Either build in Android Studio, or from the command line with Gradle: ```./gradlew assembleDebug```
 
-To do this, after running ```git clone git://git.videolan.org/vlc-ports/android.git```, run ```git checkout b01969a4bfe1b2fa4580f5e8df08dc29566d7a16```. Restore the repository with ```git checkout master```.
+The APK build output can be found under ```build/outputs/apk/```.
 
-1. Follow [AndroidCompile](https://wiki.videolan.org/AndroidCompile) and build VLC for Android.
-2. In the same build directory, run ```make .sdk```
-3. Copy everything (libs and src) inside the **vlc-sdk/** directory to the application source directory (the one containing AndroidManifest.xml).
-
-Now, just build your application, in Eclipse, ant, or any other tool of your choice.
+See ```build.gradle``` for build-related details.
 
 Debugging
 ---------
