@@ -1,18 +1,9 @@
 package com.compdigitec.libvlcandroidsample;
 
-import java.io.File;
-import java.lang.reflect.Array;
-
-import org.videolan.libvlc.LibVLC;
-import org.videolan.libvlc.LibVlcException;
-import org.videolan.libvlc.Media;
-import org.videolan.libvlc.MediaList;
-import org.videolan.libvlc.MediaPlayer;
-
-import android.os.Bundle;
-import android.os.Environment;
 import android.app.Activity;
 import android.content.Intent;
+import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -22,6 +13,12 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.Toast;
+
+import org.videolan.libvlc.LibVLC;
+import org.videolan.libvlc.Media;
+import org.videolan.libvlc.MediaPlayer;
+
+import java.io.File;
 
 public class MainActivity extends Activity {
     public final static String TAG = "LibVLCAndroidSample/MainActivity";

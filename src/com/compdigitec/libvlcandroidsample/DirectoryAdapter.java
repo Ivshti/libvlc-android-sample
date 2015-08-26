@@ -1,13 +1,5 @@
 package com.compdigitec.libvlcandroidsample;
 
-import java.io.File;
-import java.util.ArrayList;
-
-import org.videolan.libvlc.LibVLC;
-import org.videolan.libvlc.Media;
-import org.videolan.libvlc.util.AndroidUtil;
-import org.videolan.libvlc.util.Extensions;
-
 import android.database.DataSetObserver;
 import android.os.Environment;
 import android.util.Log;
@@ -15,6 +7,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
+
+import org.videolan.libvlc.util.Extensions;
+
+import java.io.File;
+import java.util.ArrayList;
 
 /**
  * List adapter used to drive the ListView in the activity.

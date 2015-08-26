@@ -1,18 +1,8 @@
 package com.compdigitec.libvlcandroidsample;
 
-import java.lang.ref.WeakReference;
-
-import org.videolan.libvlc.EventHandler;
-import org.videolan.libvlc.IVideoPlayer;
-import org.videolan.libvlc.LibVLC;
-import org.videolan.libvlc.LibVlcUtil;
-import org.videolan.libvlc.Media;
-import org.videolan.libvlc.MediaList;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.graphics.PixelFormat;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -24,8 +14,18 @@ import android.view.SurfaceView;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.Toast;
 
-public class VideoActivity extends Activity implements SurfaceHolder.Callback,
-        IVideoPlayer {
+import org.videolan.libvlc.EventHandler;
+import org.videolan.libvlc.IVLCVout;
+import org.videolan.libvlc.IVideoPlayer;
+import org.videolan.libvlc.LibVLC;
+import org.videolan.libvlc.LibVlcUtil;
+import org.videolan.libvlc.Media;
+import org.videolan.libvlc.MediaPlayer;
+
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+
+public class VideoActivity extends Activity implements IVideoPlayer, IVLCVout.Callback {
     public final static String TAG = "LibVLCAndroidSample/VideoActivity";
 
     public final static String LOCATION = "com.compdigitec.libvlcandroidsample.VideoActivity.location";
@@ -38,6 +38,7 @@ public class VideoActivity extends Activity implements SurfaceHolder.Callback,
 
     // media player
     private LibVLC libvlc;
+    private MediaPlayer mMediaPlayer = null;
     private int mVideoWidth;
     private int mVideoHeight;
     private final static int VideoSizeChanged = -1;
@@ -59,7 +60,7 @@ public class VideoActivity extends Activity implements SurfaceHolder.Callback,
 
         mSurface = (SurfaceView) findViewById(R.id.surface);
         holder = mSurface.getHolder();
-        holder.addCallback(this);
+        //holder.addCallback(this);
     }
 
     @Override
@@ -89,19 +90,6 @@ public class VideoActivity extends Activity implements SurfaceHolder.Callback,
     /*************
      * Surface
      *************/
-
-    public void surfaceCreated(SurfaceHolder holder) {
-    }
-
-    public void surfaceChanged(SurfaceHolder surfaceholder, int format,
-            int width, int height) {
-        if (libvlc != null)
-            libvlc.attachSurface(holder.getSurface(), this);
-    }
-
-    public void surfaceDestroyed(SurfaceHolder surfaceholder) {
-    }
-
     private void setSize(int width, int height) {
         mVideoWidth = width;
         mVideoHeight = height;
@@ -164,24 +152,30 @@ public class VideoActivity extends Activity implements SurfaceHolder.Callback,
                 toast.show();
             }
 
-            // Create a new media player
-            libvlc = LibVLC.getInstance();
-            libvlc.setHardwareAcceleration(LibVLC.HW_ACCELERATION_DISABLED);
-            libvlc.setSubtitlesEncoding("");
-            libvlc.setAout(LibVLC.AOUT_OPENSLES);
-            libvlc.setTimeStretching(true);
-            libvlc.setVerboseMode(true);
-            if(LibVlcUtil.isGingerbreadOrLater())
-                libvlc.setVout(LibVLC.VOUT_ANDROID_WINDOW);
-            else
-                libvlc.setVout(LibVLC.VOUT_ANDROID_SURFACE);
-            LibVLC.restart(this);
+            // Create LibVLC
+            // TODO: make this more robust, and sync with audio demo
+            ArrayList<String> options = new ArrayList<String>();
+            //options.add("--subsdec-encoding <encoding>");
+            options.add("--aout=opensles");
+            options.add("--audio-time-stretch"); // time stretching
+            options.add("-vvv"); // verbosity
+            libvlc = new LibVLC(options);
             EventHandler.getInstance().addHandler(mHandler);
             holder.setKeepScreenOn(true);
-            MediaList list = libvlc.getMediaList();
-            list.clear();
-            list.add(new Media(libvlc, LibVLC.PathToURI(media)), false);
-            libvlc.playIndex(0);
+
+            // Create media player
+            mMediaPlayer = new MediaPlayer(libvlc);
+
+            // Set up video output
+            final IVLCVout vout = mMediaPlayer.getVLCVout();
+            vout.setVideoView(mSurface);
+            //vout.setSubtitlesView(mSurfaceSubtitles);
+            vout.addCallback(this);
+            vout.attachViews();
+
+            Media m = new Media(libvlc, media);
+            mMediaPlayer.setMedia(m);
+            mMediaPlayer.play();
         } catch (Exception e) {
             Toast.makeText(this, "Error creating player!", Toast.LENGTH_LONG).show();
         }
@@ -191,9 +185,12 @@ public class VideoActivity extends Activity implements SurfaceHolder.Callback,
         if (libvlc == null)
             return;
         EventHandler.getInstance().removeHandler(mHandler);
-        libvlc.stop();
-        libvlc.detachSurface();
+        mMediaPlayer.stop();
+        final IVLCVout vout = mMediaPlayer.getVLCVout();
+        vout.removeCallback(this);
+        vout.detachViews();
         holder = null;
+        libvlc.release();
         libvlc = null;
 
         mVideoWidth = 0;
@@ -205,6 +202,27 @@ public class VideoActivity extends Activity implements SurfaceHolder.Callback,
      *************/
 
     private Handler mHandler = new MyHandler(this);
+
+    @Override
+    public void onNewLayout(IVLCVout vout, int width, int height, int visibleWidth, int visibleHeight, int sarNum, int sarDen) {
+        if (width * height == 0)
+            return;
+
+        // store video size
+        mVideoWidth = width;
+        mVideoHeight = height;
+        setSize(mVideoWidth, mVideoHeight);
+    }
+
+    @Override
+    public void onSurfacesCreated(IVLCVout vout) {
+
+    }
+
+    @Override
+    public void onSurfacesDestroyed(IVLCVout vout) {
+
+    }
 
     private static class MyHandler extends Handler {
         private WeakReference<VideoActivity> mOwner;
