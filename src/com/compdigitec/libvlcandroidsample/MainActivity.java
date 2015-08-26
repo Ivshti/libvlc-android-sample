@@ -1,10 +1,13 @@
 package com.compdigitec.libvlcandroidsample;
 
 import java.io.File;
+import java.lang.reflect.Array;
 
 import org.videolan.libvlc.LibVLC;
 import org.videolan.libvlc.LibVlcException;
+import org.videolan.libvlc.Media;
 import org.videolan.libvlc.MediaList;
+import org.videolan.libvlc.MediaPlayer;
 
 import android.os.Bundle;
 import android.os.Environment;
@@ -25,6 +28,7 @@ public class MainActivity extends Activity {
 
     DirectoryAdapter mAdapter;
     LibVLC mLibVLC = null;
+    MediaPlayer mMediaPlayer = null;
 
     boolean mPlayingVideo = false; // Don't destroy libVLC if the video activity is playing.
 
@@ -34,38 +38,48 @@ public class MainActivity extends Activity {
             // Build the path to the media file
             String amp3 = Environment.getExternalStorageDirectory()
                     .getAbsolutePath() + "/a.mp3";
-            if(!new File(amp3).exists()) {
-                Toast.makeText(
-                        MainActivity.this,
-                        Environment.getExternalStorageDirectory()
-                                .getAbsolutePath() + "/a.mp3 does not exist!",
-                        Toast.LENGTH_LONG).show();
-                return;
-            }
 
-            // LibVLC manages playback with media lists.
-            // Let's get the primary default list that comes with it.
-            MediaList list = mLibVLC.getPrimaryMediaList();
-
-            // Clear the list for demonstration purposes.
-            list.clear();
-
-            // Add the file. Notice that paths _must_ be converted to locations.
-            list.add(LibVLC.PathToURI(amp3));
-
-            // Finally, play it!
-            mLibVLC.playIndex(0);
+            // Play the path. See the method for details.
+            playMediaAtPath(amp3);
         }
     };
+
+    /**
+     * Demonstrates how to play a certain media at a given path.
+     */
+    private void playMediaAtPath(String path) {
+        // To play with LibVLC, we need a media player object.
+        // Let's get one, if needed.
+        if(mMediaPlayer == null)
+            mMediaPlayer = new MediaPlayer(mLibVLC);
+
+        // Sanity check - make sure that the file exists.
+        if(!new File(path).exists()) {
+            Toast.makeText(
+                    MainActivity.this,
+                    path + " does not exist!",
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        // Create a new Media object for the file.
+        // Each media - a song, video, or stream is represented by a Media object for LibVLC.
+        Media m = new Media(mLibVLC, path);
+
+        // Tell the media player to play the new Media.
+        mMediaPlayer.setMedia(m);
+
+        // Finally, play it!
+        mMediaPlayer.play();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         // Initialize the LibVLC multimedia framework.
         // This is required before doing anything with LibVLC.
         try {
-            mLibVLC = LibVLC.getInstance();
-            mLibVLC.init(MainActivity.this);
-        } catch(LibVlcException e) {
+            mLibVLC = new LibVLC();
+        } catch(IllegalStateException e) {
             Toast.makeText(MainActivity.this,
                     "Error initializing the libVLC multimedia framework!",
                     Toast.LENGTH_LONG).show();
@@ -86,9 +100,7 @@ public class MainActivity extends Activity {
             public void onItemClick(AdapterView<?> arg0, View arg1,
                     int position, long arg3) {
                 if (mAdapter.isAudioMode()) {
-                    mLibVLC.getMediaList().insert(0,
-                            (String) mAdapter.getItem(position));
-                    mLibVLC.playIndex(0);
+                    playMediaAtPath((String) mAdapter.getItem(position));
                 } else {
                     Intent intent = new Intent(MainActivity.this, VideoActivity.class);
                     intent.putExtra(VideoActivity.LOCATION, (String) mAdapter.getItem(position));
@@ -125,8 +137,8 @@ public class MainActivity extends Activity {
     public void onStop() {
         super.onStop();
         if(!mPlayingVideo) {
-            mLibVLC.closeAout();
-            mLibVLC.destroy();
+            mMediaPlayer.stop();
+            mLibVLC.release();
             mLibVLC = null;
         }
     }

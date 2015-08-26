@@ -5,6 +5,7 @@ import java.util.ArrayList;
 
 import org.videolan.libvlc.LibVLC;
 import org.videolan.libvlc.Media;
+import org.videolan.libvlc.util.AndroidUtil;
 import org.videolan.libvlc.util.Extensions;
 
 import android.database.DataSetObserver;
@@ -65,8 +66,7 @@ public class DirectoryAdapter extends BaseAdapter {
 
     @Override
     public Object getItem(int position) {
-        return LibVLC.PathToURI(Environment.getExternalStorageDirectory()
-                .getAbsolutePath() + '/' + mFiles.get(position));
+        return Environment.getExternalStorageDirectory().getAbsolutePath() + '/' + mFiles.get(position);
     }
 
     @Override
