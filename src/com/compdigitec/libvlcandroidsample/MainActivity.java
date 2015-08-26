@@ -43,6 +43,7 @@ public class MainActivity extends Activity {
 
     /**
      * Demonstrates how to play a certain media at a given path.
+     * TODO: demonstrate other LibVLC features like media lists, etc.
      */
     private void playMediaAtPath(String path) {
         // To play with LibVLC, we need a media player object.

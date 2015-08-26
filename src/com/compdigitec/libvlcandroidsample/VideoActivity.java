@@ -181,6 +181,7 @@ public class VideoActivity extends Activity implements IVideoPlayer, IVLCVout.Ca
         }
     }
 
+    // TODO: handle this cleaner
     private void releasePlayer() {
         if (libvlc == null)
             return;
