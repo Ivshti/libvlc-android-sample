@@ -5,6 +5,7 @@ import java.util.ArrayList;
 
 import org.videolan.libvlc.LibVLC;
 import org.videolan.libvlc.Media;
+import org.videolan.libvlc.util.Extensions;
 
 import android.database.DataSetObserver;
 import android.os.Environment;
@@ -45,9 +46,9 @@ public class DirectoryAdapter extends BaseAdapter {
             if(f.getName().contains(".")) {
                 int i = f.getName().lastIndexOf(".");
                 if (i > 0) {
-                    if ((mAudio && Media.AUDIO_EXTENSIONS.contains(f.getName()
+                    if ((mAudio && Extensions.AUDIO.contains(f.getName()
                             .substring(i)))
-                            || (!mAudio && Media.VIDEO_EXTENSIONS.contains(f
+                            || (!mAudio && Extensions.VIDEO.contains(f
                                     .getName().substring(i)))) {
                         mFiles.add(f.getName());
                     }
