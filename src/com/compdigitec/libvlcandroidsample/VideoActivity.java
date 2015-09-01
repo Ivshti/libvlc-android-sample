@@ -14,18 +14,16 @@ import android.view.SurfaceView;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.Toast;
 
-import org.videolan.libvlc.EventHandler;
 import org.videolan.libvlc.IVLCVout;
-import org.videolan.libvlc.IVideoPlayer;
 import org.videolan.libvlc.LibVLC;
-import org.videolan.libvlc.LibVlcUtil;
 import org.videolan.libvlc.Media;
 import org.videolan.libvlc.MediaPlayer;
+import org.videolan.libvlc.util.AndroidUtil;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
-public class VideoActivity extends Activity implements IVideoPlayer, IVLCVout.Callback {
+public class VideoActivity extends Activity implements IVLCVout.Callback, LibVLC.HardwareAccelerationError {
     public final static String TAG = "LibVLCAndroidSample/VideoActivity";
 
     public final static String LOCATION = "com.compdigitec.libvlcandroidsample.VideoActivity.location";
@@ -131,13 +129,6 @@ public class VideoActivity extends Activity implements IVideoPlayer, IVLCVout.Ca
         mSurface.invalidate();
     }
 
-    @Override
-    public void setSurfaceLayout(int width, int height, int visible_width,
-            int visible_height, int sar_num, int sar_den) {
-        Message msg = Message.obtain(mHandler, VideoSizeChanged, width, height);
-        msg.sendToTarget();
-    }
-
     /*************
      * Player
      *************/
@@ -160,11 +151,12 @@ public class VideoActivity extends Activity implements IVideoPlayer, IVLCVout.Ca
             options.add("--audio-time-stretch"); // time stretching
             options.add("-vvv"); // verbosity
             libvlc = new LibVLC(options);
-            EventHandler.getInstance().addHandler(mHandler);
+            libvlc.setOnHardwareAccelerationError(this);
             holder.setKeepScreenOn(true);
 
             // Create media player
             mMediaPlayer = new MediaPlayer(libvlc);
+            mMediaPlayer.setEventListener(mPlayerListener);
 
             // Set up video output
             final IVLCVout vout = mMediaPlayer.getVLCVout();
@@ -185,7 +177,6 @@ public class VideoActivity extends Activity implements IVideoPlayer, IVLCVout.Ca
     private void releasePlayer() {
         if (libvlc == null)
             return;
-        EventHandler.getInstance().removeHandler(mHandler);
         mMediaPlayer.stop();
         final IVLCVout vout = mMediaPlayer.getVLCVout();
         vout.removeCallback(this);
@@ -202,7 +193,7 @@ public class VideoActivity extends Activity implements IVideoPlayer, IVLCVout.Ca
      * Events
      *************/
 
-    private Handler mHandler = new MyHandler(this);
+    private MediaPlayer.EventListener mPlayerListener = new MyPlayerListener(this);
 
     @Override
     public void onNewLayout(IVLCVout vout, int width, int height, int visibleWidth, int visibleHeight, int sarNum, int sarDen) {
@@ -225,35 +216,27 @@ public class VideoActivity extends Activity implements IVideoPlayer, IVLCVout.Ca
 
     }
 
-    private static class MyHandler extends Handler {
+    private static class MyPlayerListener implements MediaPlayer.EventListener {
         private WeakReference<VideoActivity> mOwner;
 
-        public MyHandler(VideoActivity owner) {
+        public MyPlayerListener(VideoActivity owner) {
             mOwner = new WeakReference<VideoActivity>(owner);
         }
 
         @Override
-        public void handleMessage(Message msg) {
+        public void onEvent(MediaPlayer.Event event) {
             VideoActivity player = mOwner.get();
 
-            // SamplePlayer events
-            if (msg.what == VideoSizeChanged) {
-                player.setSize(msg.arg1, msg.arg2);
-                return;
-            }
-
-            // Libvlc events
-            Bundle b = msg.getData();
-            switch (b.getInt("event")) {
-            case EventHandler.MediaPlayerEndReached:
-                Log.d(TAG, "MediaPlayerEndReached");
-                player.releasePlayer();
-                break;
-            case EventHandler.MediaPlayerPlaying:
-            case EventHandler.MediaPlayerPaused:
-            case EventHandler.MediaPlayerStopped:
-            default:
-                break;
+            switch(event.type) {
+                case MediaPlayer.Event.EndReached:
+                    Log.d(TAG, "MediaPlayerEndReached");
+                    player.releasePlayer();
+                    break;
+                case MediaPlayer.Event.Playing:
+                case MediaPlayer.Event.Paused:
+                case MediaPlayer.Event.Stopped:
+                default:
+                    break;
             }
         }
     }
@@ -264,18 +247,5 @@ public class VideoActivity extends Activity implements IVideoPlayer, IVLCVout.Ca
         Log.e(TAG, "Error with hardware acceleration");
         this.releasePlayer();
         Toast.makeText(this, "Error with hardware acceleration", Toast.LENGTH_LONG).show();
-    }
-
-    @Override
-    public int configureSurface(Surface surface, int width, int height, int hal) {
-        Log.d(TAG, "configureSurface: width = " + width + ", height = " + height);
-        if (LibVlcUtil.isICSOrLater() || surface == null)
-            return -1;
-        if (width * height == 0)
-            return 0;
-        if(hal != 0)
-            holder.setFormat(hal);
-        holder.setFixedSize(width, height);
-        return 1;
     }
 }
