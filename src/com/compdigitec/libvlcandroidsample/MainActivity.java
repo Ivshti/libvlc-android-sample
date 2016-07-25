@@ -29,18 +29,6 @@ public class MainActivity extends Activity {
 
     boolean mPlayingVideo = false; // Don't destroy libVLC if the video activity is playing.
 
-    View.OnClickListener mSimpleListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View arg0) {
-            // Build the path to the media file
-            String amp3 = Environment.getExternalStorageDirectory()
-                    .getAbsolutePath() + "/a.mp3";
-
-            // Play the path. See the method for details.
-            playMediaAtPath(amp3);
-        }
-    };
-
     /**
      * Demonstrates how to play a certain media at a given path.
      * TODO: demonstrate other LibVLC features like media lists, etc.
@@ -50,15 +38,6 @@ public class MainActivity extends Activity {
         // Let's get one, if needed.
         if(mMediaPlayer == null)
             mMediaPlayer = new MediaPlayer(mLibVLC);
-
-        // Sanity check - make sure that the file exists.
-        if(!new File(path).exists()) {
-            Toast.makeText(
-                    MainActivity.this,
-                    path + " does not exist!",
-                    Toast.LENGTH_LONG).show();
-            return;
-        }
 
         // Create a new Media object for the file.
         // Each media - a song, video, or stream is represented by a Media object for LibVLC.
@@ -87,59 +66,11 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Set up the UI elements.
-        mAdapter = new DirectoryAdapter();
-        Button load_a_mp3 = (Button) findViewById(R.id.load_a_mp3);
-        load_a_mp3.setOnClickListener(mSimpleListener);
-        final ListView mediaView = (ListView) findViewById(R.id.mediaView);
-        mediaView.setAdapter(mAdapter);
-        mediaView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> arg0, View arg1,
-                    int position, long arg3) {
-                if (mAdapter.isAudioMode()) {
-                    playMediaAtPath((String) mAdapter.getItem(position));
-                } else {
-                    Intent intent = new Intent(MainActivity.this, VideoActivity.class);
-                    intent.putExtra(VideoActivity.LOCATION, (String) mAdapter.getItem(position));
-                    mPlayingVideo = true;
-                    startActivity(intent);
-                }
-            }
-        });
-        RadioButton radioAudio = (RadioButton)findViewById(R.id.radioAudio);
-        radioAudio.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mAdapter.setAudioMode(true);
-                mAdapter.refresh();
-            }
-        });
-        RadioButton radioVideo = (RadioButton)findViewById(R.id.radioVideo);
-        radioVideo.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mAdapter.setAudioMode(false);
-                mAdapter.refresh();
-            }
-        });
+        Intent intent = new Intent(MainActivity.this, VideoActivity.class);
+        intent.putExtra(VideoActivity.LOCATION, "http://dl.strem.io/BigBuckBunny_512kb.mp4");
+        startActivity(intent);
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        mPlayingVideo = false;
-    };
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        if(!mPlayingVideo) {
-            mMediaPlayer.stop();
-            mLibVLC.release();
-            mLibVLC = null;
-        }
-    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

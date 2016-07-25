@@ -7,12 +7,18 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.net.Uri;
 import android.view.Gravity;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.Toast;
+import android.view.View;
+import android.view.MotionEvent;
+import android.view.Display;
+import android.graphics.Point;
+
 
 import org.videolan.libvlc.IVLCVout;
 import org.videolan.libvlc.LibVLC;
@@ -59,6 +65,7 @@ public class VideoActivity extends Activity implements IVLCVout.Callback, LibVLC
         mSurface = (SurfaceView) findViewById(R.id.surface);
         holder = mSurface.getHolder();
         //holder.addCallback(this);
+
     }
 
     @Override
@@ -150,6 +157,8 @@ public class VideoActivity extends Activity implements IVLCVout.Callback, LibVLC
             options.add("--aout=opensles");
             options.add("--audio-time-stretch"); // time stretching
             options.add("-vvv"); // verbosity
+            options.add("--http-reconnect");
+            options.add("--network-caching=2000");
             libvlc = new LibVLC(options);
             libvlc.setOnHardwareAccelerationError(this);
             holder.setKeepScreenOn(true);
@@ -165,12 +174,35 @@ public class VideoActivity extends Activity implements IVLCVout.Callback, LibVLC
             vout.addCallback(this);
             vout.attachViews();
 
-            Media m = new Media(libvlc, media);
+            Media m = new Media(libvlc, Uri.parse(media));
             mMediaPlayer.setMedia(m);
             mMediaPlayer.play();
         } catch (Exception e) {
             Toast.makeText(this, "Error creating player!", Toast.LENGTH_LONG).show();
         }
+
+        mSurface.getRootView().setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent event) {
+                if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+                    Display display = getWindowManager().getDefaultDisplay();
+                    Point size = new Point();
+                    display.getSize(size);
+
+                    Float p = event.getX()/size.x;
+                    Long pos = (long) (mMediaPlayer.getLength() / p);
+                    Log.d(TAG, "Screen tapped down "+p+", seeking to "+pos);
+                    if (mMediaPlayer.isSeekable()) {
+                        //mLibVLC.setTime( pos );
+                        mMediaPlayer.setPosition(p);
+                    } else {
+                        Log.w(TAG, "Non-seekable input");
+                    }
+                }
+
+                return true;
+            }
+        });
     }
 
     // TODO: handle this cleaner
