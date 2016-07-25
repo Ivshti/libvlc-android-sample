@@ -258,11 +258,15 @@ public class VideoActivity extends Activity implements IVLCVout.Callback, LibVLC
         @Override
         public void onEvent(MediaPlayer.Event event) {
             VideoActivity player = mOwner.get();
-
+            Log.d(TAG, "Player EVENT");
             switch(event.type) {
                 case MediaPlayer.Event.EndReached:
                     Log.d(TAG, "MediaPlayerEndReached");
                     player.releasePlayer();
+                    break;
+                case MediaPlayer.Event.EncounteredError:
+                    Log.d(TAG, "Media Player Error, re-try");
+                    //player.releasePlayer();
                     break;
                 case MediaPlayer.Event.Playing:
                 case MediaPlayer.Event.Paused:
