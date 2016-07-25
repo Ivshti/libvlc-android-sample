@@ -67,7 +67,8 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         Intent intent = new Intent(MainActivity.this, VideoActivity.class);
-        intent.putExtra(VideoActivity.LOCATION, "http://dl.strem.io/BigBuckBunny_512kb.mp4");
+        //intent.putExtra(VideoActivity.LOCATION, "http://dl.strem.io/BigBuckBunny_512kb.mp4");
+        intent.putExtra(VideoActivity.LOCATION, "http://dl.strem.io/bbb_sunflower_1080p_30fps_normal.mp4");
         startActivity(intent);
     }
 

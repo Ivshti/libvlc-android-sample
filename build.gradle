@@ -49,6 +49,7 @@ android {
 dependencies {
     compile 'com.android.support:support-v4:21.0.3'
     compile 'de.mrmaffen:vlc-android-sdk:1.9.8'
-    compile 'com.jxcore:jxcore-service:0.3.4.0'
+    //compile 'com.jxcore:jxcore-service:0.3.4.0'
+    compile project(':jxcore-service')
 }
 
