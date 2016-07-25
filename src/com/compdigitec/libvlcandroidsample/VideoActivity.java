@@ -29,7 +29,7 @@ import org.videolan.libvlc.util.AndroidUtil;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
-public class VideoActivity extends Activity implements IVLCVout.Callback, LibVLC.HardwareAccelerationError {
+public class VideoActivity extends Activity implements IVLCVout.Callback {
     public final static String TAG = "LibVLCAndroidSample/VideoActivity";
 
     public final static String LOCATION = "com.compdigitec.libvlcandroidsample.VideoActivity.location";
@@ -160,7 +160,7 @@ public class VideoActivity extends Activity implements IVLCVout.Callback, LibVLC
             options.add("--http-reconnect");
             options.add("--network-caching=2000");
             libvlc = new LibVLC(options);
-            libvlc.setOnHardwareAccelerationError(this);
+            //libvlc.setOnHardwareAccelerationError(this);
             holder.setKeepScreenOn(true);
 
             // Create media player
@@ -191,7 +191,7 @@ public class VideoActivity extends Activity implements IVLCVout.Callback, LibVLC
 
                     Float p = event.getX()/size.x;
                     Long pos = (long) (mMediaPlayer.getLength() / p);
-                    Log.d(TAG, "Screen tapped down "+p+", seeking to "+pos);
+                    Log.d(TAG, "seek to "+p+" / "+pos+" state is "+mMediaPlayer.getPlayerState());
                     if (mMediaPlayer.isSeekable()) {
                         //mLibVLC.setTime( pos );
                         mMediaPlayer.setPosition(p);
@@ -277,8 +277,9 @@ public class VideoActivity extends Activity implements IVLCVout.Callback, LibVLC
         }
     }
 
+
     @Override
-    public void eventHardwareAccelerationError() {
+    public void onHardwareAccelerationError(IVLCVout vout) {
         // Handle errors with hardware acceleration
         Log.e(TAG, "Error with hardware acceleration");
         this.releasePlayer();

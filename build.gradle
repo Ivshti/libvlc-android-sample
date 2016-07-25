@@ -38,13 +38,14 @@ android {
     }
 }
 
-repositories {
-    flatDir {
-        dirs '.'
-    }
-}
-
 dependencies {
     compile 'com.android.support:support-v4:21.0.3'
-    compile(name:'libvlc', ext:'aar')
+    compile 'de.mrmaffen:vlc-android-sdk:1.9.8'
+}
+
+
+allprojects {
+    repositories {
+        jcenter()
+    }
 }
