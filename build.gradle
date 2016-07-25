@@ -3,10 +3,18 @@ apply plugin: 'com.android.application'
 buildscript {
     repositories {
         jcenter()
+        mavenLocal()
     }
 
     dependencies {
         classpath 'com.android.tools.build:gradle:2.1.2'
+    }
+}
+
+allprojects {
+    repositories {
+        jcenter()
+        mavenLocal()
     }
 }
 
@@ -41,11 +49,6 @@ android {
 dependencies {
     compile 'com.android.support:support-v4:21.0.3'
     compile 'de.mrmaffen:vlc-android-sdk:1.9.8'
+    compile 'com.jxcore:jxcore-service:0.3.4.0'
 }
 
-
-allprojects {
-    repositories {
-        jcenter()
-    }
-}
